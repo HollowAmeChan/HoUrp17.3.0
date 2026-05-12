@@ -718,7 +718,7 @@ namespace UnityEngine.Rendering.Universal
 #endif
 
 #if UNITY_EDITOR
-            if (cameraData.isSceneViewCamera)
+            if (cameraData.isSceneViewCamera && SceneViewMSAASettings.enabled)
             {
                 cameraData.cameraTargetDescriptor.msaaSamples = asset.msaaSampleCount;
             }

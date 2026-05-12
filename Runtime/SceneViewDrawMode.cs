@@ -57,5 +57,23 @@ namespace UnityEditor.Rendering.Universal
             sceneViewHaveValidateFunction.Clear();
         }
     }
+
+    internal static class SceneViewMSAASettings
+    {
+        const string k_EditorPrefKey = "Unity.Rendering.Universal.SceneViewMSAA";
+
+        internal static bool enabled
+        {
+            get => EditorPrefs.GetBool(k_EditorPrefKey, true);
+            set
+            {
+                if (enabled == value)
+                    return;
+
+                EditorPrefs.SetBool(k_EditorPrefKey, value);
+                SceneView.RepaintAll();
+            }
+        }
+    }
 }
 #endif
