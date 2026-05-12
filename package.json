@@ -6,8 +6,7 @@
   "displayName": "Ho Universal Render Pipeline",
   "dependencies": {
     "com.unity.render-pipelines.core": "17.3.0",
-    "com.unity.shadergraph": "17.3.0",
-    "com.unity.render-pipelines.universal-config": "17.0.3"
+    "com.unity.shadergraph": "17.3.0"
   },
   "keywords": [
     "graphics",
