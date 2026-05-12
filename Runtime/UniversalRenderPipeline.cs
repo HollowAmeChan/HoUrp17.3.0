@@ -717,6 +717,13 @@ namespace UnityEngine.Rendering.Universal
                 ApplyAdaptivePerformance(cameraData);
 #endif
 
+#if UNITY_EDITOR
+            if (cameraData.isSceneViewCamera)
+            {
+                cameraData.cameraTargetDescriptor.msaaSamples = asset.msaaSampleCount;
+            }
+#endif
+
             RenderSingleCamera(context, cameraData);
         }
 
