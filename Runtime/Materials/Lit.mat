@@ -21,23 +21,43 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Lit
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: e66172d3b40f88d449a821efed862d2d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_ValidKeywords:
+  - _SCREENINGMODE_NONE
+  - _UVMODE_DEFAULT
+  - _WETNESSMODE_NONE
+  - _WINDMODE_NONE
+  m_InvalidKeywords:
+  - _PARALLAXMODE_NONE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
-  stringTagMap:
-    RenderType: Opaque
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AnisotropyDirection:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AnisotropyMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AtrasMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BackfaceTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -46,7 +66,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _ClearCoatBumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ClearCoatMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ClearCoatMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -58,6 +86,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DetailBumpMap1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailBumpMap2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailBumpMap3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailBumpMap4:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _DetailMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -66,7 +110,51 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DetailTex1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailTex2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailTex3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailTex4:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DitherTex:
+        m_Texture: {fileID: 2800000, guid: 25d81b78f7cfc2e46913a746caa2d782, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionSubpixel:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoAovCustom0Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoAovCustom1Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoAovCustom2Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoAovCustom3Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LILPBRPlanarReflectionTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -86,11 +174,39 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PBRMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SSAOMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SmoothnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SubsurfaceMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TransparencyLM:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WetnessBumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WetnessMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -108,47 +224,196 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _Anisotropy: 1
+    - _AnisotropyChannel: 0
+    - _BackfaceOverride: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoat: 0
+    - _ClearCoatBaseBumpScale: 0
+    - _ClearCoatBumpScale: 1
+    - _ClearCoatChannel: 0
     - _ClearCoatMask: 0
+    - _ClearCoatReflectance: 0.04
     - _ClearCoatSmoothness: 0
+    - _ClearCoatSmoothnessChannel: 3
+    - _Cloth: 0
+    - _ClothAlbedoBlend: 0
+    - _ClothDark: 0.9
+    - _ClothFuzz: 0.5
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DetailAlbedoBlend1: 3
+    - _DetailAlbedoBlend2: 3
+    - _DetailAlbedoBlend3: 3
+    - _DetailAlbedoBlend4: 3
     - _DetailAlbedoMapScale: 1
+    - _DetailBumpMapBlend1: 0
+    - _DetailBumpMapBlend2: 0
+    - _DetailBumpMapBlend3: 0
+    - _DetailBumpMapBlend4: 0
+    - _DetailBumpScale1: 1
+    - _DetailBumpScale2: 1
+    - _DetailBumpScale3: 1
+    - _DetailBumpScale4: 1
     - _DetailNormalMapScale: 1
+    - _DetailProjectionSharpness1: 10
+    - _DetailProjectionSharpness2: 10
+    - _DetailProjectionSharpness3: 10
+    - _DetailProjectionSharpness4: 10
+    - _DetailProjectionThreshold1: 0.6
+    - _DetailProjectionThreshold2: 0.6
+    - _DetailProjectionThreshold3: 0.6
+    - _DetailProjectionThreshold4: 0.6
+    - _DetailUVMode1: 0
+    - _DetailUVMode2: 0
+    - _DetailUVMode3: 0
+    - _DetailUVMode4: 0
+    - _DistanceFade: 0
+    - _DistanceFadeEnd: 0.01
+    - _DistanceFadeStart: 0.1
+    - _DitherRandomize: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _GSAAStrength: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossinessSource: 0
     - _GlossyReflections: 1
+    - _HeightChannel: 2
+    - _HideInCamera: 0
+    - _HideInDesktop: 0
+    - _HideInMirror: 0
+    - _HideInNotMirror: 0
+    - _HideInScreenshot: 0
+    - _HideInVR: 0
+    - _HoAovCurvature: 0
+    - _HoAovCustomWriteMask: 0
+    - _HoAovFlags: 0
+    - _HoAovGroupId: 0
+    - _HoAovMaskWeight: 1
+    - _HoAovMaterialClass: 0
+    - _HoAovObjectCustomMask: 0
+    - _HoAovObjectId: 0
+    - _HoAovSystemWriteMask: 3935
+    - _HoAovThickness: 0
+    - _HoAovUtility: 0
+    - _HoCharacterCaptureOpacity: 1
+    - _LTCGI: 0
     - _Metallic: 0
+    - _MetallicChannel: 0
     - _Mode: 0
+    - _OcclusionChannel: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _ParallaxMode: 0
+    - _ParallaxQuality: 16
+    - _ParallaxRandomize: 1
+    - _PlanarReflectionEdgeFade: 4
+    - _PlanarReflectionFadeEnd: 0
+    - _PlanarReflectionFadeStart: 0
+    - _PlanarReflectionFlipY: 0
+    - _PlanarReflectionMinSmoothness: 0.75
+    - _PlanarReflectionStrength: 1
     - _QueueOffset: 0
+    - _RainLoop: 8
+    - _RainScale: 1
+    - _RainSpeed: 1
+    - _RandomizeUV: 0
     - _ReceiveShadows: 1
+    - _Reflectance: 0.04
     - _ReflectionSource: 0
+    - _RenderingMode: 0
+    - _SSAOContrast: 1
+    - _SSAODirectStrength: 1
+    - _SSAOIndirectStrength: 0.5
+    - _SSAOStrength: 1
+    - _SSREdgeFade: 8
+    - _SSRMaxDistance: 10
+    - _SSRMinSmoothness: 0.75
+    - _SSRStepCount: 32
+    - _SSRStrength: 1
+    - _SSRThickness: 0.15
+    - _ScreenSpaceAOSource: 0
+    - _ScreeningMode: 0
+    - _ScreeningNoiseStrength: 0.1
+    - _ScreeningScaleX: 1024
+    - _ScreeningScaleY: 1024
+    - _ShaderLayer: 0
     - _Shininess: 1
     - _Smoothness: 0.5
+    - _SmoothnessChannel: 3
     - _SmoothnessTextureChannel: 0
     - _SpecSource: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _StencilComp: 8
+    - _StencilFail: 0
+    - _StencilPass: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 0
+    - _StencilWriteMask: 255
+    - _StencilZFail: 0
+    - _SubsurfaceAlbedoBlend: 1
+    - _SubsurfaceChannel: 0
+    - _SubsurfaceInvert: 0
+    - _SubsurfacePower: 1
+    - _SubsurfaceReceiveShadow: 1
+    - _SubsurfaceRim: 1
+    - _SubsurfaceScattering: 0
+    - _SubsurfaceThickness: 1
     - _Surface: 0
+    - _TextureMode: 0
+    - _Translucent: 0
+    - _TranslucentAlbedoBlend: 1
+    - _TranslucentRoughness: 1
+    - _TranslucentRoughnessBlend: 1
+    - _UVMode: 0
     - _UVSec: 0
+    - _UsePlanarReflection: 0
+    - _UseScreenSpaceAO: 1
+    - _UseScreenSpaceReflection: 0
+    - _VertexColorMode: 0
+    - _WetnessBumpScale: 1
+    - _WetnessBumpScroll: 1
+    - _WetnessChannel: 0
+    - _WetnessDepth: 1
+    - _WetnessMode: 0
+    - _WindBranchSoftness: 0.25
+    - _WindClothMode: 0
+    - _WindLeafSoftness: 0.25
+    - _WindMode: 0
+    - _WindTreeMode: 0
     - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _ClothColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _DetailProjection1: {r: 0, g: 0, b: 0, a: 0}
+    - _DetailProjection2: {r: 0, g: 0, b: 0, a: 0}
+    - _DetailProjection3: {r: 0, g: 0, b: 0, a: 0}
+    - _DetailProjection4: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _HoAovCustom0Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoAovCustom1Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoAovCustom2Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoAovCustom3Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoAovCustomValues0: {r: 0, g: 0, b: 0, a: 0}
+    - _PlanarReflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    - _SSAORemap: {r: 0, g: 1, b: 0, a: 0}
     - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SubsurfaceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _TranslucentColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WetnessColor: {r: 0.12999997, g: 0.33999997, b: 0.5, a: 1}
+    - _WindDirection: {r: 0.5, g: 0, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
