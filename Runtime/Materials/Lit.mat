@@ -138,6 +138,14 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FlowMap0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FlowMap1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _HoAovCustom0Tex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -154,6 +162,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _HoMetadataBufferCustom0Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoMetadataBufferCustom1Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoMetadataBufferCustom2Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoMetadataBufferCustom3Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _LILPBRPlanarReflectionTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -167,6 +191,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicSpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap1:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -232,6 +264,7 @@ Material:
     - _BackfaceOverride: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BufferCoverage: 1
     - _BumpScale: 1
     - _ClearCoat: 0
     - _ClearCoatBaseBumpScale: 0
@@ -281,6 +314,10 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflectionMode: 0
     - _EnvironmentReflections: 1
+    - _FlowSpeed0: 0.12
+    - _FlowSpeed1: -0.07
+    - _FlowStrength0: 0.18
+    - _FlowStrength1: 0.08
     - _GSAAStrength: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -305,18 +342,39 @@ Material:
     - _HoAovThickness: 0
     - _HoAovUtility: 0
     - _HoCharacterCaptureOpacity: 1
+    - _HoMetadataBufferCurvature: 0
+    - _HoMetadataBufferCustomWriteMask: 0
+    - _HoMetadataBufferFlags: 0
+    - _HoMetadataBufferGroupId: 0
+    - _HoMetadataBufferMaskWeight: 1
+    - _HoMetadataBufferMaterialClass: 8
+    - _HoMetadataBufferObjectCustomMask: 0
+    - _HoMetadataBufferObjectId: 0
+    - _HoMetadataBufferSystemWriteMask: 3847
+    - _HoMetadataBufferThickness: 0
+    - _HoMetadataBufferTransmittanceHint: 0
     - _HoSSSProfileId: 3
+    - _HoSSSThicknessScale: 1
+    - _HoSSSTransmissionRadius: 1
+    - _HoSSSTransmissionStrength: 1
+    - _HoShadowStrength: 1
+    - _IndirectStrength: 0.65
     - _InvertSmoothness: 0
     - _LTCGI: 0
+    - _LilPbrAdvancedEnd: 0
     - _Metallic: 0
     - _MetallicChannel: 0
     - _Mode: 0
+    - _NormalScale0: 1
+    - _NormalScale1: 0.45
+    - _NormalStrength: 1
     - _OcclusionChannel: 1
     - _OcclusionStrength: 1
     - _Parallax: 0
     - _ParallaxMode: 0
     - _ParallaxQuality: 16
     - _ParallaxRandomize: 1
+    - _PlanarReflectionDistortion: 0.018
     - _PlanarReflectionEdgeFade: 4
     - _PlanarReflectionFadeEnd: 0
     - _PlanarReflectionFadeStart: 0
@@ -328,6 +386,7 @@ Material:
     - _RainScale: 1
     - _RainSpeed: 1
     - _RandomizeUV: 0
+    - _ReceiveShadowStrength: 1
     - _ReceiveShadows: 1
     - _Reflectance: 0.04
     - _ReflectionSource: 0
@@ -348,8 +407,12 @@ Material:
     - _ScreeningScaleX: 1024
     - _ScreeningScaleY: 1024
     - _ShaderLayer: 0
+    - _ShadowContrast: 1
+    - _ShadowMinLight: 0
+    - _ShadowStrength: 1
+    - _ShadowTintStrength: 0
     - _Shininess: 1
-    - _Smoothness: 0.5
+    - _Smoothness: 1
     - _SmoothnessChannel: 3
     - _SmoothnessTextureChannel: 0
     - _SpecSource: 0
@@ -380,6 +443,7 @@ Material:
     - _SubsurfaceThickness: 1
     - _SubsurfaceWrap: 0.319
     - _Surface: 0
+    - _SurfaceAlpha: 0.72
     - _TextureMode: 0
     - _Translucent: 0
     - _TranslucentAlbedoBlend: 1
@@ -387,15 +451,32 @@ Material:
     - _TranslucentRoughnessBlend: 1
     - _UVMode: 0
     - _UVSec: 0
+    - _UseAnisotropy: 0
+    - _UseAtrasMask: 0
+    - _UseBumpMap: 0
+    - _UseClearCoat: 0
+    - _UseClearCoatBumpMap: 0
+    - _UseCloth: 0
+    - _UseDetail1: 0
+    - _UseDetail2: 0
+    - _UseDetail3: 0
+    - _UseDetail4: 0
+    - _UseEmission: 0
+    - _UseEmissionSubpixel: 0
     - _UsePlanarReflection: 0
     - _UseScreenSpaceAO: 1
     - _UseScreenSpaceReflection: 0
+    - _UseSubsurfaceScattering: 0
+    - _UseTranslucent: 0
     - _VertexColorMode: 0
+    - _WaterFlowmapAdvancedEnd: 0
+    - _Wetness: 1
     - _WetnessBumpScale: 1
     - _WetnessBumpScroll: 1
     - _WetnessChannel: 0
     - _WetnessDepth: 1
     - _WetnessMode: 0
+    - _WetnessSmoothnessBoost: 0
     - _WindBranchSoftness: 0.25
     - _WindClothMode: 0
     - _WindLeafSoftness: 0.25
@@ -414,17 +495,27 @@ Material:
     - _DetailProjection3: {r: 0, g: 0, b: 0, a: 0}
     - _DetailProjection4: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FlowMap0Scroll: {r: 0, g: 0, b: 0, a: 0}
+    - _FlowMap1Scroll: {r: 0, g: 0, b: 0, a: 0}
     - _HoAovCustom0Color: {r: 0, g: 0, b: 0, a: 0}
     - _HoAovCustom1Color: {r: 0, g: 0, b: 0, a: 0}
     - _HoAovCustom2Color: {r: 0, g: 0, b: 0, a: 0}
     - _HoAovCustom3Color: {r: 0, g: 0, b: 0, a: 0}
     - _HoAovCustomValues0: {r: 0, g: 0, b: 0, a: 0}
+    - _HoMetadataBufferCustom0Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoMetadataBufferCustom1Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoMetadataBufferCustom2Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoMetadataBufferCustom3Color: {r: 0, g: 0, b: 0, a: 0}
+    - _HoMetadataBufferCustomValues0: {r: 0, g: 0, b: 0, a: 0}
     - _PlanarReflectionTint: {r: 1, g: 1, b: 1, a: 1}
     - _SSAORemap: {r: 0, g: 1, b: 0, a: 0}
+    - _ShadowTint: {r: 1, g: 0.55, b: 0.45, a: 1}
     - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecularHighlightColor: {r: 1, g: 1, b: 1, a: 1}
     - _SubsurfaceAbsorptionColor: {r: 1, g: 1, b: 1, a: 1}
     - _SubsurfaceColor: {r: 1, g: 0.45597476, b: 0.45597476, a: 1}
+    - _SurfaceColor: {r: 0.17999998, g: 0.47999996, b: 0.62, a: 0.72}
     - _TranslucentColor: {r: 1, g: 1, b: 1, a: 1}
     - _WetnessColor: {r: 0.12999997, g: 0.33999997, b: 0.5, a: 1}
     - _WindDirection: {r: 0.5, g: 0, b: 1, a: 0}
