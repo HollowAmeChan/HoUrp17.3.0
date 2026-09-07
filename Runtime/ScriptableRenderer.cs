@@ -655,6 +655,7 @@ namespace UnityEngine.Rendering.Universal
         protected static readonly RTHandle k_CameraTarget = RTHandles.Alloc(BuiltinRenderTextureType.CameraTarget);
 
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>(32);
+        int m_RenderPassEnqueueOrder;
         List<ScriptableRendererFeature> m_RendererFeatures = new List<ScriptableRendererFeature>(10);
 
         RTHandle m_CameraColorTarget;
@@ -763,6 +764,7 @@ namespace UnityEngine.Rendering.Universal
             useRenderPassEnabled = data.useNativeRenderPass;
             Clear(CameraRenderType.Base);
             m_ActiveRenderPassQueue.Clear();
+            m_RenderPassEnqueueOrder = 0;
 
             if (UniversalRenderPipeline.asset)
             {
@@ -1550,6 +1552,7 @@ namespace UnityEngine.Rendering.Universal
         /// <param name="pass">Render pass to be enqueued.</param>
         public void EnqueuePass(ScriptableRenderPass pass)
         {
+            pass.renderPassEnqueueOrder = m_RenderPassEnqueueOrder++;
             m_ActiveRenderPassQueue.Add(pass);
 
 #if URP_COMPATIBILITY_MODE
@@ -2338,6 +2341,7 @@ namespace UnityEngine.Rendering.Universal
                     m_IsPipelineExecuting = false;
                 }
                 m_ActiveRenderPassQueue.Clear();
+                m_RenderPassEnqueueOrder = 0;
             }
         }
 
@@ -2386,11 +2390,23 @@ namespace UnityEngine.Rendering.Universal
                 ScriptableRenderPass curr = list[i];
 
                 j = i - 1;
-                for (; j >= 0 && curr < list[j]; --j)
+                for (; j >= 0 && IsPassBefore(curr, list[j]); --j)
                     list[j + 1] = list[j];
 
                 list[j + 1] = curr;
             }
+        }
+
+        static bool IsPassBefore(ScriptableRenderPass lhs, ScriptableRenderPass rhs)
+        {
+            if (lhs.renderPassEvent != rhs.renderPassEvent)
+                return lhs.renderPassEvent < rhs.renderPassEvent;
+
+            // All renderer and feature passes enter through EnqueuePass. The
+            // explicit sequence makes same-event ordering a documented contract.
+            return lhs.renderPassEnqueueOrder >= 0
+                && rhs.renderPassEnqueueOrder >= 0
+                && lhs.renderPassEnqueueOrder < rhs.renderPassEnqueueOrder;
         }
 
         internal struct RenderBlocks : IDisposable

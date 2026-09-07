@@ -359,6 +359,9 @@ namespace UnityEngine.Rendering.Universal
 #endif
         // index to track the position in the current frame
         internal int renderPassQueueIndex { get; set; }
+        // Explicit per-frame enqueue order. ScriptableRenderer uses this as the
+        // stable tie-breaker for passes sharing the same RenderPassEvent.
+        internal int renderPassEnqueueOrder { get; set; }
 
         internal NativeArray<int> m_ColorAttachmentIndices;
         internal NativeArray<int> m_InputAttachmentIndices;
@@ -411,6 +414,7 @@ namespace UnityEngine.Rendering.Universal
             isBlitRenderPass = false;
             useNativeRenderPass = true;
             renderPassQueueIndex = -1;
+            renderPassEnqueueOrder = -1;
             renderTargetFormat = new GraphicsFormat[]
             {
                 GraphicsFormat.None, GraphicsFormat.None, GraphicsFormat.None,
