@@ -981,6 +981,35 @@ namespace UnityEngine.Rendering.Universal
             m_MotionVectorPass.Render(renderGraph, frameData, resourceData.cameraDepthTexture, resourceData.motionVectorColor, resourceData.motionVectorDepth);
         }
 
+        // Custom RenderGraph blit passes bind their source as _BlitTexture.
+        // Some sources are the active camera attachment; leaving that global
+        // binding alive makes the following DrawObjects pass import the same
+        // texture as an input while also using it as its color attachment.
+        // Clear the transient blit binding at the built-in pass boundary.
+        private sealed class ResetBlitTexturePassData
+        {
+            internal TextureHandle blackTexture;
+        }
+
+        private static readonly int s_BlitTextureId = Shader.PropertyToID("_BlitTexture");
+        private static readonly ProfilingSampler s_ResetBlitTextureSampler = new ProfilingSampler("Reset Blit Texture Global");
+
+        private static void ResetBlitTextureGlobal(RenderGraph renderGraph)
+        {
+            TextureHandle blackTexture = renderGraph.defaultResources.blackTexture;
+            using (var builder = renderGraph.AddRasterRenderPass<ResetBlitTexturePassData>(s_ResetBlitTextureSampler.name, out var passData, s_ResetBlitTextureSampler))
+            {
+                passData.blackTexture = blackTexture;
+                builder.SetGlobalTextureAfterPass(blackTexture, s_BlitTextureId);
+                builder.AllowGlobalStateModification(true);
+                builder.AllowPassCulling(false);
+                builder.SetRenderFunc(static (ResetBlitTexturePassData data, RasterGraphContext context) =>
+                {
+                    context.cmd.SetGlobalTexture(s_BlitTextureId, data.blackTexture);
+                });
+            }
+        }
+
         private void ExecuteScheduledDepthCopyWithMotion(RenderGraph renderGraph, UniversalResourceData resourceData, bool renderMotionVectors)
         {
             CopyDepthToDepthTexture(renderGraph, resourceData);
@@ -1285,6 +1314,8 @@ namespace UnityEngine.Rendering.Universal
             }
 
             RecordCustomRenderGraphPasses(renderGraph, RenderPassEvent.BeforeRenderingTransparents);
+
+            ResetBlitTextureGlobal(renderGraph);
 
 #if UNITY_EDITOR
             {
