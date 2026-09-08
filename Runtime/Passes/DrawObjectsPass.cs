@@ -291,7 +291,14 @@ namespace UnityEngine.Rendering.Universal.Internal
 
             using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
             {
-                builder.UseAllGlobalTextures(true);
+                // Opaque shaders may consume the full global semantic set while
+                // they populate the camera target. Transparent shaders already
+                // declare the resources that URP wires below (shadows, SSAO,
+                // irradiance and DBuffer). Importing every global texture here
+                // can accidentally pull the current camera attachment through
+                // a stale _BlitTexture binding, making RenderGraph see the same
+                // texture as both input and color attachment.
+                builder.UseAllGlobalTextures(m_IsOpaque);
 
                 InitPassData(cameraData, ref passData, batchLayerMask, resourceData.isActiveTargetBackBuffer);
 
