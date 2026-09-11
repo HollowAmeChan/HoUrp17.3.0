@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine.Experimental.Rendering;
+#if UNITY_EDITOR
+using UnityEditor.Rendering.Universal;
+#endif
 
 namespace UnityEngine.Rendering.Universal
 {
@@ -173,10 +176,19 @@ namespace UnityEngine.Rendering.Universal
 
                 ScriptableRenderPass pass = m_ActiveRenderPassQueue[passIdx];
 
-                var samples = pass.overrideCameraTarget ? GetFirstAllocatedRTHandle(pass).rt.descriptor.msaaSamples : (cameraData.targetTexture != null ? cameraData.targetTexture.descriptor.msaaSamples : cameraData.cameraTargetDescriptor.msaaSamples);
+                var samples = pass.overrideCameraTarget
+                    ? GetFirstAllocatedRTHandle(pass).rt.descriptor.msaaSamples
+                    : (cameraData.isSceneViewCamera
+                        ? cameraData.cameraTargetDescriptor.msaaSamples
+                        : (cameraData.targetTexture != null ? cameraData.targetTexture.descriptor.msaaSamples : cameraData.cameraTargetDescriptor.msaaSamples));
 
                 bool rendererSupportsMSAA = cameraData.renderer != null && cameraData.renderer.supportedRenderingFeatures.msaa;
-                if (!cameraData.camera.allowMSAA || !rendererSupportsMSAA)
+                bool allowMSAA = cameraData.camera.allowMSAA;
+#if UNITY_EDITOR
+                if (cameraData.isSceneViewCamera)
+                    allowMSAA = SceneViewMSAASettings.enabled;
+#endif
+                if (!allowMSAA || !rendererSupportsMSAA)
                     samples = 1;
 
                 // only override existing non destructive actions

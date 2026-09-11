@@ -717,13 +717,6 @@ namespace UnityEngine.Rendering.Universal
                 ApplyAdaptivePerformance(cameraData);
 #endif
 
-#if UNITY_EDITOR
-            if (cameraData.isSceneViewCamera && SceneViewMSAASettings.enabled)
-            {
-                cameraData.cameraTargetDescriptor.msaaSamples = asset.msaaSampleCount;
-            }
-#endif
-
             RenderSingleCamera(context, cameraData);
         }
 
@@ -1411,9 +1404,20 @@ namespace UnityEngine.Rendering.Universal
 
             bool rendererSupportsMSAA = renderer != null && renderer.supportedRenderingFeatures.msaa;
 
+            bool allowMSAA = camera.allowMSAA;
+#if UNITY_EDITOR
+            // Scene View has its own editor toggle. Use it as the authoritative
+            // value so the camera property cannot keep MSAA enabled when the
+            // toolbar toggle is off.
+            if (cameraData.isSceneViewCamera)
+                allowMSAA = SceneViewMSAASettings.enabled;
+#endif
+
             int msaaSamples = 1;
-            if (camera.allowMSAA && asset.msaaSampleCount > 1 && rendererSupportsMSAA)
-                msaaSamples = (camera.targetTexture != null) ? camera.targetTexture.antiAliasing : asset.msaaSampleCount;
+            if (allowMSAA && asset.msaaSampleCount > 1 && rendererSupportsMSAA)
+                msaaSamples = cameraData.isSceneViewCamera
+                    ? asset.msaaSampleCount
+                    : (camera.targetTexture != null ? camera.targetTexture.antiAliasing : asset.msaaSampleCount);
 
             // Use XR's MSAA if camera is XR camera. XR MSAA needs special handle here because it is not per Camera.
             // Multiple cameras could render into the same XR display and they should share the same MSAA level.
