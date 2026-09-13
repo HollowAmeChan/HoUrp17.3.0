@@ -197,6 +197,13 @@ namespace UnityEngine.Rendering.Universal
         public UniversalCameraHistory historyManager { get => m_HistoryManager; set => m_HistoryManager = value; }
 
         /// <summary>
+        /// Motion data that persists over frames, owned by the UniversalAdditionalCameraData of the camera.
+        /// It is null for cameras without that component, except for the Scene View camera, which is fed
+        /// from the Scene View anti-aliasing state (editor only).
+        /// </summary>
+        internal MotionVectorsPersistentData motionVectorsPersistentData;
+
+        /// <summary>
         /// The camera render type used for camera stacking.
         /// <see cref="CameraRenderType"/>
         /// </summary>

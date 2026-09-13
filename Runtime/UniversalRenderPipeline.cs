@@ -380,6 +380,12 @@ namespace UnityEngine.Rendering.Universal
                     additionalCameraData.historyManager.Dispose();
                 };
             }
+
+#if UNITY_EDITOR
+            // The Scene View cameras have no UniversalAdditionalCameraData, their history is kept with
+            // the Scene View anti-aliasing settings.
+            SceneViewCameraStates.Dispose();
+#endif
         }
 
         readonly struct CameraRenderingScope : IDisposable
@@ -831,8 +837,9 @@ namespace UnityEngine.Rendering.Universal
                 // Called and updated only once, as the same camera can be rendered multiple times.
                 // NOTE: Tracks only the current (this) camera, not shadow views or any other offscreen views.
                 // NOTE: Shared between both Execute and Render (RG) paths.
-                if (additionalCameraData != null)
-                    additionalCameraData.motionVectorsPersistentData.Update(cameraData);
+                // The data lives on the UniversalAdditionalCameraData component, or on the Scene View
+                // specific state for the editor camera which has no such component.
+                cameraData.motionVectorsPersistentData?.Update(cameraData);
 
                 // TODO: Move into the renderer. Problem: It modifies the AdditionalCameraData which is copied into RenderingData which causes value divergence for value types.
                 // Update TAA persistent data based on cameraData. Most importantly resize the history render targets.
@@ -1382,6 +1389,27 @@ namespace UnityEngine.Rendering.Universal
 
             // Add reference to writable camera history to give access to injected user render passes which can produce history.
             cameraData.historyManager = additionalCameraData?.historyManager;
+            cameraData.motionVectorsPersistentData = additionalCameraData?.motionVectorsPersistentData;
+#if UNITY_EDITOR
+            // The Scene View camera is created by the editor and never carries a
+            // UniversalAdditionalCameraData, but temporal anti-aliasing needs the camera history
+            // container and the persistent motion data that it owns. The history itself is requested in
+            // InitializeAdditionalCameraData, together with the TAA settings.
+            if (cameraData.isSceneViewCamera)
+            {
+                if (SceneViewAntialiasingSettings.usesTemporalAA)
+                {
+                    SceneViewCameraState sceneViewState = SceneViewCameraStates.Get(camera);
+                    cameraData.historyManager = sceneViewState.history;
+                    cameraData.motionVectorsPersistentData = sceneViewState.motionVectorsPersistentData;
+                }
+                else
+                {
+                    // Free the history of a Scene View that switched to another mode.
+                    SceneViewCameraStates.Release(camera);
+                }
+            }
+#endif
 
             ///////////////////////////////////////////////////////////////////
             // Descriptor settings                                            /
@@ -1406,11 +1434,12 @@ namespace UnityEngine.Rendering.Universal
 
             bool allowMSAA = camera.allowMSAA;
 #if UNITY_EDITOR
-            // Scene View has its own editor toggle. Use it as the authoritative
-            // value so the camera property cannot keep MSAA enabled when the
-            // toolbar toggle is off.
+            // The Scene View has its own anti-aliasing mode, selected in the Scene View toolbar, and it
+            // is the authoritative value so that the camera property cannot keep MSAA enabled when
+            // another mode is selected. MSAA is one of the modes; the post processing based modes need
+            // MSAA off, exactly like the per camera anti-aliasing modes do for game cameras.
             if (cameraData.isSceneViewCamera)
-                allowMSAA = SceneViewMSAASettings.enabled;
+                allowMSAA = SceneViewAntialiasingSettings.mode == SceneViewAntialiasing.MSAA;
 #endif
 
             int msaaSamples = 1;
@@ -1466,6 +1495,13 @@ namespace UnityEngine.Rendering.Universal
                 cameraData.isDitheringEnabled = false;
                 cameraData.antialiasing = AntialiasingMode.None;
                 cameraData.antialiasingQuality = AntialiasingQuality.High;
+#if UNITY_EDITOR
+                // The Scene View does not read the camera anti-aliasing settings, it has its own mode in
+                // the Scene View toolbar. MSAA is resolved through the URP asset sample count in
+                // CreateCameraData, the other modes are applied by the post processing pass.
+                cameraData.antialiasing = SceneViewAntialiasingSettings.cameraAntialiasingMode;
+                cameraData.antialiasingQuality = SceneViewAntialiasingSettings.quality;
+#endif
                 cameraData.xrRendering = false;
                 cameraData.allowHDROutput = false;
             }
@@ -1660,7 +1696,14 @@ namespace UnityEngine.Rendering.Universal
 
             // NOTE: TAA depends on XR modifications of cameraTargetDescriptor.
             if (additionalCameraData != null)
-                UpdateTemporalAAData(cameraData, additionalCameraData);
+                UpdateTemporalAAData(cameraData, additionalCameraData.historyManager, ref additionalCameraData.taaSettings);
+#if UNITY_EDITOR
+            else if (cameraData.isSceneViewCamera && SceneViewAntialiasingSettings.usesTemporalAA)
+            {
+                SceneViewCameraState sceneViewState = SceneViewCameraStates.Get(camera);
+                UpdateTemporalAAData(cameraData, sceneViewState.history, ref sceneViewState.taaSettings);
+            }
+#endif
 
             Matrix4x4 projectionMatrix = camera.projectionMatrix;
 
@@ -2009,24 +2052,23 @@ namespace UnityEngine.Rendering.Universal
             }
         }
 
-        private static void UpdateTemporalAAData(UniversalCameraData cameraData, UniversalAdditionalCameraData additionalCameraData)
+        private static void UpdateTemporalAAData(UniversalCameraData cameraData, UniversalCameraHistory history, ref TemporalAA.Settings settings)
         {
             // Always request the TAA history data here in order to fit the existing URP structure.
-            additionalCameraData.historyManager.RequestAccess<TaaHistory>();
-            cameraData.taaHistory = additionalCameraData.historyManager.GetHistoryForWrite<TaaHistory>();
+            history.RequestAccess<TaaHistory>();
+            cameraData.taaHistory = history.GetHistoryForWrite<TaaHistory>();
 
             if (cameraData.IsSTPEnabled())
             {
-                additionalCameraData.historyManager.RequestAccess<StpHistory>();
-                cameraData.stpHistory = additionalCameraData.historyManager.GetHistoryForWrite<StpHistory>();
+                history.RequestAccess<StpHistory>();
+                cameraData.stpHistory = history.GetHistoryForWrite<StpHistory>();
             }
 
             // Update TAA settings
-            ref var taaSettings = ref additionalCameraData.taaSettings;
-            cameraData.taaSettings = taaSettings;
+            cameraData.taaSettings = settings;
 
             // Decrease history clear counter. Typically clear is only 1 frame, but can be many for XR multipass eyes!
-            taaSettings.resetHistoryFrames -= taaSettings.resetHistoryFrames > 0 ? 1 : 0;
+            settings.resetHistoryFrames -= settings.resetHistoryFrames > 0 ? 1 : 0;
         }
 
         private static void UpdateTemporalAATargets(UniversalCameraData cameraData)

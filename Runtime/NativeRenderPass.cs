@@ -186,7 +186,7 @@ namespace UnityEngine.Rendering.Universal
                 bool allowMSAA = cameraData.camera.allowMSAA;
 #if UNITY_EDITOR
                 if (cameraData.isSceneViewCamera)
-                    allowMSAA = SceneViewMSAASettings.enabled;
+                    allowMSAA = SceneViewAntialiasingSettings.mode == SceneViewAntialiasing.MSAA;
 #endif
                 if (!allowMSAA || !rendererSupportsMSAA)
                     samples = 1;

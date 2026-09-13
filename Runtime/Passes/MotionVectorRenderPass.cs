@@ -261,28 +261,28 @@ namespace UnityEngine.Rendering.Universal
 #if URP_COMPATIBILITY_MODE
         internal static void SetMotionVectorGlobalMatrices(CommandBuffer cmd, UniversalCameraData cameraData)
         {
-            if (cameraData.camera.TryGetComponent<UniversalAdditionalCameraData>(out var additionalCameraData))
-            {
-                additionalCameraData.motionVectorsPersistentData?.SetGlobalMotionMatrices(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData.xr);
-            }
+            cameraData.motionVectorsPersistentData?.SetGlobalMotionMatrices(CommandBufferHelpers.GetRasterCommandBuffer(cmd), cameraData.xr);
         }
 #endif
 
         internal static void SetRenderGraphMotionVectorGlobalMatrices(RenderGraph renderGraph, UniversalCameraData cameraData)
         {
-            if (cameraData.camera.TryGetComponent<UniversalAdditionalCameraData>(out var additionalCameraData))
-            {
-                using (var builder = renderGraph.AddRasterRenderPass<MotionMatrixPassData>(s_SetMotionMatrixProfilingSampler.name, out var passData, s_SetMotionMatrixProfilingSampler))
-                {
-                    passData.motionData = additionalCameraData.motionVectorsPersistentData;
-                    passData.xr = cameraData.xr;
+            // The data is null for cameras without a UniversalAdditionalCameraData, the Scene View camera
+            // gets its own from the Scene View anti-aliasing state.
+            MotionVectorsPersistentData motionData = cameraData.motionVectorsPersistentData;
+            if (motionData == null)
+                return;
 
-                    builder.AllowGlobalStateModification(true);
-                    builder.SetRenderFunc(static (MotionMatrixPassData data, RasterGraphContext context) =>
-                    {
-                        data.motionData.SetGlobalMotionMatrices(context.cmd, data.xr);
-                    });
-                }
+            using (var builder = renderGraph.AddRasterRenderPass<MotionMatrixPassData>(s_SetMotionMatrixProfilingSampler.name, out var passData, s_SetMotionMatrixProfilingSampler))
+            {
+                passData.motionData = motionData;
+                passData.xr = cameraData.xr;
+
+                builder.AllowGlobalStateModification(true);
+                builder.SetRenderFunc(static (MotionMatrixPassData data, RasterGraphContext context) =>
+                {
+                    data.motionData.SetGlobalMotionMatrices(context.cmd, data.xr);
+                });
             }
         }
     }
