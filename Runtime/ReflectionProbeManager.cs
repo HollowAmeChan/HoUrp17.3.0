@@ -167,6 +167,19 @@ namespace UnityEngine.Rendering.Universal
                     continue;
                 }
 
+                // Baking again or switching probe modes can replace the cubemap while
+                // keeping the probe instance ID. The atlas must stop using the old texture.
+                if (wasCached && (cachedProbe.texture != texture || cachedProbe.size != texture.width))
+                {
+                    for (var mip = 0; mip < k_MaxMipCount; mip++)
+                    {
+                        if (cachedProbe.dataIndices[mip] != -1) m_AtlasAllocator.Free(new BuddyAllocation(cachedProbe.levels[mip], cachedProbe.dataIndices[mip]));
+                    }
+                    m_Cache.Remove(id);
+                    cachedProbe = default;
+                    wasCached = false;
+                }
+
                 if (!wasCached)
                 {
                     cachedProbe.size = texture.width;
