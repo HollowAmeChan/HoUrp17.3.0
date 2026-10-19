@@ -1,63 +1,29 @@
 # Ho Universal Render Pipeline 17.3.0
 
-这个仓库是 Hollow 本地使用的 Unity Universal Render Pipeline 17.3.0 包副本。包名仍然是 `com.unity.render-pipelines.universal`，因此 Unity 项目指向这个本地目录后，会把它当作当前 URP 包解析。
+Ho 渲染体系的 URP 基座，基于 Unity URP 17.3.0 维护，供材质与渲染扩展使用。
 
-## 在整套系统里的定位
+## 功能
 
-`HoUrp17.3.0` 是 `D:/Unity_Fork` 这套渲染系统的 URP 基座。
+- **URP 渲染基础**：前向 / Forward+、延迟渲染、灯光、阴影、探针、后处理与 Shader Library。
+- **扩展接口**：RendererFeature、自定义渲染 pass、RenderGraph 与兼容模式接口。
+- **Scene View 抗锯齿**：工具栏可切换 Off、MSAA、FXAA、SMAA、TAA；TAA 可配合 Always Refresh 持续收敛。
+- **明确的 pass 排序**：同一渲染事件按入队顺序执行，便于组织 Ho 各模块的先后依赖。
+- **反射探针更新**：更换 Cubemap 或分辨率时刷新反射图集缓存。
 
-它提供：
+面向 Unity 6000.3，包名保留 `com.unity.render-pipelines.universal`。包文档见 [Documentation~](Documentation~/)。
 
-- URP runtime、editor、shader library、renderer feature、2D renderer、samples 和 tests。
-- `lilToon-URP-Extensions` 依赖的 RenderGraph 与兼容模式 API。
-- `lilToon`、`lilPBR`、`HoToon` 使用的 URP shader include 路径。
-- 与 `HoUrpConfig17.0.3` 配套的本地 URP 运行时。
+## Ho 渲染体系相关仓库
 
-高层的 lilToon/lilPBR 实验功能应优先放在 `lilToon-URP-Extensions`，只有必须改 URP 内部时才改这个仓库。
+| 仓库 | 用途 |
+| --- | --- |
+| [HoTools](https://github.com/HollowAmeChan/HoTools) | Blender 角色、模型、贴图、动画与自动化工具 |
+| [HoGLTF](https://github.com/HollowAmeChan/HoGLTF) | Blender glTF 导出与 Ho 材质契约桥接 |
+| [HoUrpConfig17.0.3](https://github.com/HollowAmeChan/HoUrpConfig17.0.3) | URP Shader 配置 |
+| [lilToon](https://github.com/HollowAmeChan/lilToon) | 角色 / NPR 着色器 |
+| [lilToon-URP-Extensions](https://github.com/HollowAmeChan/lilToon-URP-Extensions) | 光照、阴影、反射与后处理扩展 |
+| [lilToon-UnityGLTF-Extensions](https://github.com/HollowAmeChan/lilToon-UnityGLTF-Extensions) | glTF 材质契约导入 |
+| [HoUnityTools](https://github.com/HollowAmeChan/HoUnityTools) | 角色、动画与创作工具 |
 
-## 重要目录
+## 可选材质合集
 
-- `Runtime/`：URP renderer、frame data、passes、materials、settings、2D、XR、VFX 和 RenderGraph。
-- `ShaderLibrary/`：URP shader 和下游 shader 包共享的 HLSL include。
-- `Shaders/`：URP 内置 shader。
-- `Editor/`：URP 编辑器 UI、转换器、shader stripping、构建检查等。
-- `Samples~/`：URP 官方样例。
-- `Tests/`：runtime/editor 测试。
-- `Documentation~/`：包文档入口和 API 索引。
-
-## 包身份
-
-```json
-{
-  "name": "com.unity.render-pipelines.universal",
-  "displayName": "Ho Universal Render Pipeline",
-  "version": "17.3.0",
-  "unity": "6000.3"
-}
-```
-
-因为包名就是官方 URP 包名，同一个项目里不要再同时安装另一个 `com.unity.render-pipelines.universal`。
-
-## 安装
-
-在 Unity 项目的 `Packages/manifest.json` 中使用本地路径：
-
-```json
-{
-  "dependencies": {
-    "com.unity.render-pipelines.universal": "file:D:/Unity_Fork/HoUrp17.3.0",
-    "com.unity.render-pipelines.universal-config": "file:D:/Unity_Fork/HoUrpConfig17.0.3"
-  }
-}
-```
-
-这个包仍需要兼容版本的：
-
-- `com.unity.render-pipelines.core`
-- `com.unity.shadergraph`
-
-## 开发注意
-
-- 改 URP 内部时，需要同时考虑 RenderGraph 和兼容模式路径。
-- 下游包能解决的问题，不要直接塞进 URP fork。
-- 当前 `Runtime/Materials/Lit.mat` 在 README 修改前已经有本地改动，请和文档改动分开处理。
+- [HoShader](https://github.com/HollowAmeChan/HoShader)：宝石、皮肤、绒毛等独立材质与 Shader 实验合集，按需选用。
