@@ -2310,7 +2310,7 @@ namespace UnityEngine.Rendering.Universal
             m_HasFinalPass = false;
             m_EnableColorEncodingIfNeeded = enableColorEncodingIfNeeded;
 
-            if (m_FilmGrain.IsActive())
+            if (!cameraData.useHoPostProcessing && m_FilmGrain.IsActive())
             {
                 material.EnableKeyword(ShaderKeywordStrings.FilmGrain);
                 PostProcessUtils.ConfigureFilmGrain(
@@ -2321,7 +2321,7 @@ namespace UnityEngine.Rendering.Universal
                 );
             }
 
-            if (cameraData.isDitheringEnabled)
+            if (!cameraData.useHoPostProcessing && cameraData.isDitheringEnabled)
             {
                 material.EnableKeyword(ShaderKeywordStrings.Dithering);
                 m_DitheringTextureIndex = PostProcessUtils.ConfigureDithering(
@@ -2342,7 +2342,7 @@ namespace UnityEngine.Rendering.Universal
                 // If there is a final post process pass, it's always the final pass so do color encoding
                 settings.hdrOperations = m_EnableColorEncodingIfNeeded ? HDROutputUtils.Operation.ColorEncoding : HDROutputUtils.Operation.None;
                 // If the color space conversion wasn't applied by the uber pass, do it here
-                if (!cameraData.postProcessEnabled)
+                if (!cameraData.postProcessEnabled || cameraData.useHoPostProcessing)
                     settings.hdrOperations |= HDROutputUtils.Operation.ColorConversion;
 
                 SetupHDROutput(cameraData.hdrDisplayInformation, cameraData.hdrDisplayColorGamut, material, settings.hdrOperations, cameraData.rendersOverlayUI);
@@ -2601,11 +2601,19 @@ namespace UnityEngine.Rendering.Universal
 
         private class PostFXSetupPassData { }
 
+        private class HoColorCopyPassData
+        {
+            internal TextureHandle source;
+        }
+
         public void RenderPostProcessingRenderGraph(RenderGraph renderGraph, ContextContainer frameData, in TextureHandle activeCameraColorTexture, in TextureHandle lutTexture, in TextureHandle overlayUITexture, in TextureHandle postProcessingTarget, bool hasFinalPass, bool resolveToDebugScreen, bool enableColorEndingIfNeeded)
         {
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
             UniversalPostProcessingData postProcessingData = frameData.Get<UniversalPostProcessingData>();
+
+            HoPostProcessingDiagnostics.Record(cameraData, "RenderGraph",
+                !cameraData.useHoPostProcessing && lutTexture.IsValid());
 
             var stack = VolumeManager.instance.stack;
             m_DepthOfField = stack.GetComponent<DepthOfField>();
@@ -2634,7 +2642,7 @@ namespace UnityEngine.Rendering.Universal
             bool useStopNan = cameraData.isStopNaNEnabled && m_Materials.stopNaN != null;
             bool useSubPixelMorpAA = cameraData.antialiasing == AntialiasingMode.SubpixelMorphologicalAntiAliasing;
             var dofMaterial = m_DepthOfField.mode.value == DepthOfFieldMode.Gaussian ? m_Materials.gaussianDepthOfField : m_Materials.bokehDepthOfField;
-            bool useDepthOfField = m_DepthOfField.IsActive() && !isSceneViewCamera && dofMaterial != null;
+            bool useDepthOfField = !cameraData.useHoPostProcessing && m_DepthOfField.IsActive() && !isSceneViewCamera && dofMaterial != null;
             bool useLensFlare = !LensFlareCommonSRP.Instance.IsEmpty() && m_SupportDataDrivenLensFlare;
             bool useLensFlareScreenSpace = m_LensFlareScreenSpace.IsActive() && m_SupportScreenSpaceLensFlare;
             bool useMotionBlur = m_MotionBlur.IsActive() && !isSceneViewCamera;
@@ -2804,6 +2812,28 @@ namespace UnityEngine.Rendering.Universal
                     RenderTemporalAA(renderGraph, resourceData, cameraData, ref currentSource, out var TemporalAATarget);
                     currentSource = TemporalAATarget;
                 }
+            }
+
+            if (cameraData.useHoPostProcessing)
+            {
+                // Keep the AA result in HDR. Do not run the native uber shader:
+                // even an apparently neutral LUT can change the Ho stack's input.
+                if (enableColorEndingIfNeeded && !hasFinalPass)
+                {
+                    RenderFinalPassRenderGraph(renderGraph, frameData, in currentSource,
+                        in overlayUITexture, in postProcessingTarget, true);
+                }
+                else
+                {
+                    using var builder = renderGraph.AddRasterRenderPass<HoColorCopyPassData>(
+                        "Ho Post: AA Resolve (No Built-in Effects)", out var copyData);
+                    copyData.source = currentSource;
+                    builder.UseTexture(currentSource, AccessFlags.Read);
+                    builder.SetRenderAttachment(postProcessingTarget, 0, AccessFlags.WriteAll);
+                    builder.SetRenderFunc(static (HoColorCopyPassData data, RasterGraphContext context) =>
+                        Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), 0, false));
+                }
+                return;
             }
 
             if(useMotionBlur)
@@ -2996,7 +3026,7 @@ namespace UnityEngine.Rendering.Universal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetupGrain(UniversalCameraData cameraData, Material material)
         {
-            if (!m_HasFinalPass && m_FilmGrain.IsActive())
+            if (!cameraData.useHoPostProcessing && !m_HasFinalPass && m_FilmGrain.IsActive())
             {
                 material.EnableKeyword(ShaderKeywordStrings.FilmGrain);
                 PostProcessUtils.ConfigureFilmGrain(
@@ -3016,7 +3046,7 @@ namespace UnityEngine.Rendering.Universal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetupDithering(UniversalCameraData cameraData, Material material)
         {
-            if (!m_HasFinalPass && cameraData.isDitheringEnabled)
+            if (!cameraData.useHoPostProcessing && !m_HasFinalPass && cameraData.isDitheringEnabled)
             {
                 material.EnableKeyword(ShaderKeywordStrings.Dithering);
                 m_DitheringTextureIndex = PostProcessUtils.ConfigureDithering(

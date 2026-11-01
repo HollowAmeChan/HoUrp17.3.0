@@ -763,7 +763,7 @@ namespace UnityEngine.Rendering.Universal
 
             RecordCustomRenderGraphPasses(renderGraph, RenderPassEvent.AfterRenderingShadows);
 
-            bool requiredColorGradingLutPass = cameraData.postProcessEnabled && m_PostProcessPassRenderGraph != null;
+            bool requiredColorGradingLutPass = cameraData.postProcessEnabled && !cameraData.useHoPostProcessing && m_PostProcessPassRenderGraph != null;
             if (requiredColorGradingLutPass)
             {
                 TextureHandle internalColorLut;

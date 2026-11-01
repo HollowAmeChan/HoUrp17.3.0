@@ -407,6 +407,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
         void Render(CommandBuffer cmd, ref RenderingData renderingData)
         {
             UniversalCameraData cameraData = renderingData.frameData.Get<UniversalCameraData>();
+            HoPostProcessingDiagnostics.Record(cameraData, "Compatibility", !cameraData.useHoPostProcessing);
             ref ScriptableRenderer renderer = ref cameraData.renderer;
             bool isSceneViewCamera = cameraData.isSceneViewCamera;
 
@@ -415,10 +416,10 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
             bool useStopNan = cameraData.isStopNaNEnabled && m_Materials.stopNaN != null;
             bool useSubPixeMorpAA = cameraData.antialiasing == AntialiasingMode.SubpixelMorphologicalAntiAliasing;
             var dofMaterial = m_DepthOfField.mode.value == DepthOfFieldMode.Gaussian ? m_Materials.gaussianDepthOfField : m_Materials.bokehDepthOfField;
-            bool useDepthOfField = m_DepthOfField.IsActive() && !isSceneViewCamera && dofMaterial != null;
-            bool useLensFlareScreenSpace = m_LensFlareScreenSpace.IsActive() && m_SupportScreenSpaceLensFlare;
-            bool useMotionBlur = m_MotionBlur.IsActive() && !isSceneViewCamera;
-            bool usePaniniProjection = m_PaniniProjection.IsActive() && !isSceneViewCamera;
+            bool useDepthOfField = !cameraData.useHoPostProcessing && m_DepthOfField.IsActive() && !isSceneViewCamera && dofMaterial != null;
+            bool useLensFlareScreenSpace = !cameraData.useHoPostProcessing && m_LensFlareScreenSpace.IsActive() && m_SupportScreenSpaceLensFlare;
+            bool useMotionBlur = !cameraData.useHoPostProcessing && m_MotionBlur.IsActive() && !isSceneViewCamera;
+            bool usePaniniProjection = !cameraData.useHoPostProcessing && m_PaniniProjection.IsActive() && !isSceneViewCamera;
 
             // Disable MotionBlur in EditMode, so that editing remains clear and readable.
             // NOTE: HDRP does the same via CoreUtils::AreAnimatedMaterialsEnabled().
@@ -431,7 +432,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
             if (cameraData.IsTemporalAARequested() && !useTemporalAA)
                 TemporalAA.ValidateAndWarn(cameraData);
 
-            int amountOfPassesRemaining = (useStopNan ? 1 : 0) + (useSubPixeMorpAA ? 1 : 0) + (useDepthOfField ? 1 : 0) + (useLensFlare ? 1 : 0) + (useTemporalAA ? 1 : 0) + (useMotionBlur ? 1 : 0) + (usePaniniProjection ? 1 : 0);
+            int amountOfPassesRemaining = (useStopNan ? 1 : 0) + (useSubPixeMorpAA ? 1 : 0) + (useDepthOfField ? 1 : 0) + (useLensFlare && !cameraData.useHoPostProcessing ? 1 : 0) + (useTemporalAA ? 1 : 0) + (useMotionBlur ? 1 : 0) + (usePaniniProjection ? 1 : 0);
 
             if (m_UseSwapBuffer && amountOfPassesRemaining > 0)
             {
@@ -572,8 +573,8 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                 m_Materials.uber.shaderKeywords = null;
 
                 // Bloom goes first
-                bool bloomActive = m_Bloom.IsActive();
-                bool lensFlareScreenSpaceActive = m_LensFlareScreenSpace.IsActive();
+                bool bloomActive = !cameraData.useHoPostProcessing && m_Bloom.IsActive();
+                bool lensFlareScreenSpaceActive = !cameraData.useHoPostProcessing && m_LensFlareScreenSpace.IsActive();
 
                 // We need to still do the bloom pass if lens flare screen space is active because it uses _Bloom_Texture.
                 if (bloomActive || lensFlareScreenSpaceActive)
@@ -594,7 +595,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                 }
 
                 // Lens Flare
-                if (useLensFlare)
+                if (useLensFlare && !cameraData.useHoPostProcessing)
                 {
                     bool usePanini;
                     float paniniDistance;
@@ -623,10 +624,13 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                 }
 
                 // Setup other effects constants
-                SetupLensDistortion(m_Materials.uber, isSceneViewCamera);
-                SetupChromaticAberration(m_Materials.uber);
-                SetupVignette(m_Materials.uber, cameraData.xr, m_Descriptor.width, m_Descriptor.height);
-                SetupColorGrading(cmd, ref renderingData, m_Materials.uber);
+                if (!cameraData.useHoPostProcessing)
+                {
+                    SetupLensDistortion(m_Materials.uber, isSceneViewCamera);
+                    SetupChromaticAberration(m_Materials.uber);
+                    SetupVignette(m_Materials.uber, cameraData.xr, m_Descriptor.width, m_Descriptor.height);
+                    SetupColorGrading(cmd, ref renderingData, m_Materials.uber);
+                }
 
                 // Only apply dithering & grain if there isn't a final pass.
                 SetupGrain(cameraData, m_Materials.uber);
@@ -651,6 +655,26 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                 }
 
                 CoreUtils.SetKeyword(m_Materials.uber, ShaderKeywordStrings._ENABLE_ALPHA_OUTPUT, cameraData.isAlphaOutputEnabled);
+
+                Material resolveMaterial = m_Materials.uber;
+                if (cameraData.useHoPostProcessing)
+                {
+                    // Native final-pass shader with all look keywords disabled:
+                    // copy/encode only, without exposure, LUT, bloom or vignette.
+                    resolveMaterial = m_Materials.finalPass;
+                    resolveMaterial.shaderKeywords = null;
+                    CoreUtils.SetKeyword(resolveMaterial, ShaderKeywordStrings.LinearToSRGBConversion,
+                        RequireSRGBConversionBlitToBackBuffer(cameraData.requireSrgbConversion));
+                    CoreUtils.SetKeyword(resolveMaterial, ShaderKeywordStrings._ENABLE_ALPHA_OUTPUT, cameraData.isAlphaOutputEnabled);
+                    if (requireHDROutput)
+                    {
+                        var operation = HDROutputUtils.Operation.ColorConversion;
+                        if (!m_HasFinalPass && m_EnableColorEncodingIfNeeded)
+                            operation |= HDROutputUtils.Operation.ColorEncoding;
+                        SetupHDROutput(cameraData.hdrDisplayInformation, cameraData.hdrDisplayColorGamut,
+                            resolveMaterial, operation, cameraData.rendersOverlayUI);
+                    }
+                }
 
                 DebugHandler debugHandler = GetActiveDebugHandler(cameraData);
                 bool resolveToDebugScreen = debugHandler != null && debugHandler.WriteToDebugScreenTexture(cameraData.resolveFinalTarget);
@@ -689,7 +713,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                         #pragma warning restore CS0618
                     }
 
-                    Blitter.BlitCameraTexture(cmd, GetSource(), destination, colorLoadAction, RenderBufferStoreAction.Store, m_Materials.uber, 0);
+                    Blitter.BlitCameraTexture(cmd, GetSource(), destination, colorLoadAction, RenderBufferStoreAction.Store, resolveMaterial, 0);
                     // Disable obsolete warning for internal usage
                     #pragma warning disable CS0618
                     renderer.ConfigureCameraColorTarget(destination);
@@ -703,7 +727,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                 else if (!m_UseSwapBuffer)
                 {
                     var firstSource = GetSource();
-                    Blitter.BlitCameraTexture(cmd, firstSource, GetDestination(), colorLoadAction, RenderBufferStoreAction.Store, m_Materials.uber, 0);
+                    Blitter.BlitCameraTexture(cmd, firstSource, GetDestination(), colorLoadAction, RenderBufferStoreAction.Store, resolveMaterial, 0);
                     Blitter.BlitCameraTexture(cmd, GetDestination(), m_Destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, m_BlitMaterial, m_Destination.rt?.filterMode == FilterMode.Bilinear ? 1 : 0);
                 }
                 else if (m_ResolveToScreen)
@@ -711,7 +735,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                     if (resolveToDebugScreen)
                     {
                         // Blit to the debugger texture instead of the camera target
-                        Blitter.BlitCameraTexture(cmd, GetSource(), debugHandler.DebugScreenColorHandle, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, m_Materials.uber, 0);
+                        Blitter.BlitCameraTexture(cmd, GetSource(), debugHandler.DebugScreenColorHandle, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, resolveMaterial, 0);
                         // Disable obsolete warning for internal usage
                         #pragma warning disable CS0618
                         renderer.ConfigureCameraTarget(debugHandler.DebugScreenColorHandle, debugHandler.DebugScreenDepthHandle);
@@ -724,7 +748,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
                         RTHandleStaticHelpers.SetRTHandleStaticWrapper(cameraTarget);
                         var cameraTargetHandle = RTHandleStaticHelpers.s_RTHandleWrapper;
 
-                        RenderingUtils.FinalBlit(cmd, cameraData, GetSource(), cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, m_Materials.uber, 0);
+                        RenderingUtils.FinalBlit(cmd, cameraData, GetSource(), cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, resolveMaterial, 0);
                         // Disable obsolete warning for internal usage
                         #pragma warning disable CS0618
                         renderer.ConfigureCameraColorTarget(cameraTargetHandle);
@@ -1554,7 +1578,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
 
         void SetupGrain(UniversalCameraData cameraData, Material material)
         {
-            if (!m_HasFinalPass && m_FilmGrain.IsActive())
+            if (!cameraData.useHoPostProcessing && !m_HasFinalPass && m_FilmGrain.IsActive())
             {
                 material.EnableKeyword(ShaderKeywordStrings.FilmGrain);
                 PostProcessUtils.ConfigureFilmGrain(
@@ -1572,7 +1596,7 @@ namespace UnityEngine.Rendering.Universal.CompatibilityMode
 
         void SetupDithering(UniversalCameraData cameraData, Material material)
         {
-            if (!m_HasFinalPass && cameraData.isDitheringEnabled)
+            if (!cameraData.useHoPostProcessing && !m_HasFinalPass && cameraData.isDitheringEnabled)
             {
                 material.EnableKeyword(ShaderKeywordStrings.Dithering);
                 m_DitheringTextureIndex = PostProcessUtils.ConfigureDithering(

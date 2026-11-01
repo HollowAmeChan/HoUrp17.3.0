@@ -1118,6 +1118,7 @@ namespace UnityEngine.Rendering.Universal
                         && baseCameraData.allowHDROutput; // Check whether the base camera allows HDR output
 
                     // Update stack-related parameters
+                    stackAnyPostProcessingEnabled |= baseCameraData.useHoPostProcessing;
                     baseCameraData.stackAnyPostProcessingEnabled = stackAnyPostProcessingEnabled;
                     baseCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
 
@@ -1175,7 +1176,7 @@ namespace UnityEngine.Rendering.Universal
                                 bool isLastOverlayCamera = i == lastActiveOverlayCameraIndex;
                                 InitializeAdditionalCameraData(overlayCamera, overlayAdditionalCameraData, isLastOverlayCamera, isLastBaseCamera, overlayCameraData);
 
-                                overlayCameraData.stackAnyPostProcessingEnabled = stackAnyPostProcessingEnabled;
+                                overlayCameraData.stackAnyPostProcessingEnabled = stackAnyPostProcessingEnabled || overlayCameraData.useHoPostProcessing;
                                 overlayCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
 
                                 xrLayout.ReconfigurePass(overlayCameraData.xr, overlayCamera);
@@ -1315,6 +1316,9 @@ namespace UnityEngine.Rendering.Universal
 
             if (cameraData.IsTemporalAAEnabled() && (cameraData.renderType == CameraRenderType.Base))
                 return true;
+
+            if (cameraData.useHoPostProcessing)
+                return false;
 
             return CheckPostProcessForDepth();
         }
@@ -1676,6 +1680,10 @@ namespace UnityEngine.Rendering.Universal
             }
 
             cameraData.renderer = renderer;
+            cameraData.useHoPostProcessing = renderer.UsesHoPostProcessing(camera);
+            // The camera/Scene View's native Post Processing checkbox must not
+            // silently disable TAA in the independently enabled Ho pipeline.
+            cameraData.postProcessEnabled |= cameraData.useHoPostProcessing;
             cameraData.postProcessingRequiresDepthTexture = CheckPostProcessForDepth(cameraData);
             cameraData.resolveFinalTarget = resolveFinalTarget;
             cameraData.isLastBaseCamera = isLastBaseCamera;
@@ -1765,7 +1773,8 @@ namespace UnityEngine.Rendering.Universal
 
             // Apply post-processing settings to the alpha output.
             // cameraData.isAlphaOutputEnabled is set based on target alpha channel availability on create. Target can be a RenderTexture or the back-buffer.
-            bool allowAlphaOutput = !cameraData.postProcessEnabled || (cameraData.postProcessEnabled && settings.allowPostProcessAlphaOutput);
+            bool allowAlphaOutput = cameraData.useHoPostProcessing || !cameraData.postProcessEnabled ||
+                (cameraData.postProcessEnabled && settings.allowPostProcessAlphaOutput);
             cameraData.isAlphaOutputEnabled = cameraData.isAlphaOutputEnabled && allowAlphaOutput;
         }
 
@@ -1971,7 +1980,7 @@ namespace UnityEngine.Rendering.Universal
             UniversalPostProcessingData postProcessingData = frameData.Create<UniversalPostProcessingData>();
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
 
-            postProcessingData.isEnabled = cameraData.stackAnyPostProcessingEnabled;
+            postProcessingData.isEnabled = cameraData.stackAnyPostProcessingEnabled || cameraData.useHoPostProcessing;
 
             postProcessingData.gradingMode = settings.supportsHDR
                 ? settings.colorGradingMode

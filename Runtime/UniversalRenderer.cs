@@ -920,7 +920,7 @@ namespace UnityEngine.Rendering.Universal
             bool cameraHasPostProcessingWithDepth = applyPostProcessing && cameraData.postProcessingRequiresDepthTexture;
 
             // TODO: We could cache and generate the LUT before rendering the stack
-            bool generateColorGradingLUT = cameraData.postProcessEnabled && m_PostProcessPasses.isCreated;
+            bool generateColorGradingLUT = cameraData.postProcessEnabled && !cameraData.useHoPostProcessing && m_PostProcessPasses.isCreated;
             bool isSceneViewOrPreviewCamera = cameraData.isSceneViewCamera || cameraData.isPreviewCamera;
             // This indicates whether the renderer will output a depth texture.
             bool requiresDepthTexture = cameraData.requiresDepthTexture || renderPassInputs.requiresDepthTexture || useDepthPriming;

@@ -605,6 +605,16 @@ namespace UnityEngine.Rendering.Universal
             get => m_RendererFeatures;
         }
 
+        internal bool UsesHoPostProcessing(Camera camera)
+        {
+            foreach (var feature in m_RendererFeatures)
+                if (feature != null && feature.isActive &&
+                    feature is IHoPostProcessingProvider provider &&
+                    provider.ReplacesBuiltinPostProcessing(camera))
+                    return true;
+            return false;
+        }
+
         /// <summary>
         /// Returns a list of render passes scheduled to be executed by this renderer.
         /// </summary>

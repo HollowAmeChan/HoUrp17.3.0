@@ -566,6 +566,12 @@ namespace UnityEngine.Rendering.Universal
         public bool postProcessEnabled;
 
         /// <summary>
+        /// Ho owns image effects. The native post pass supplies AA/upscaling only;
+        /// native Volume effects and the color-grading LUT must not alter its input.
+        /// </summary>
+        public bool useHoPostProcessing;
+
+        /// <summary>
         /// True if post-processing is enabled for any camera in this camera's stack.
         /// </summary>
         internal bool stackAnyPostProcessingEnabled;
@@ -708,6 +714,7 @@ namespace UnityEngine.Rendering.Universal
             xr = default;
             maxShadowDistance = 0.0f;
             postProcessEnabled = false;
+            useHoPostProcessing = false;
             captureActions = default;
             volumeLayerMask = 0;
             volumeTrigger = default;
