@@ -1,6 +1,9 @@
 #ifndef UNIVERSAL_PIPELINE_CORE_INCLUDED
 #define UNIVERSAL_PIPELINE_CORE_INCLUDED
 
+// Ho materials use the renderer's resolved shadow products on this pipeline.
+#define HO_URP_SCREEN_SHADOW_ABI 1
+
 // VT is not supported in URP (for now) this ensures any shaders using the VT
 // node work by falling to regular texture sampling.
 #define FORCE_VIRTUAL_TEXTURING_OFF 1
