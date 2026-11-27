@@ -241,6 +241,28 @@ namespace UnityEngine.Rendering.Universal
         /// <summary>Whether this renderer allows transparent objects to receive realtime shadows.</summary>
         public bool shadowTransparentReceive { get; internal set; }
 
+        /// <summary>Gets the forward draw layer mask when its unprimed depth prepass can occlude opaque-queue alpha receivers.</summary>
+        public bool TryGetEarlyTransparentShadowLayerMask(in CameraData cameraData, out int layerMask) =>
+            TryGetEarlyTransparentShadowLayerMask(cameraData.universalCameraData, out layerMask);
+
+        /// <summary>Gets the opaque-queue receiver mask for the current RenderGraph camera.</summary>
+        public bool TryGetEarlyTransparentShadowLayerMask(UniversalCameraData cameraData, out int layerMask)
+        {
+            layerMask = 0;
+            if (cameraData == null || cameraData.camera == null || cameraData.renderer != this
+                || !shadowTransparentReceive || usesDeferredLighting || useDepthPriming
+                || depthPrimingMode != DepthPrimingMode.Disabled || cameraData.useGPUOcclusionCulling || m_DefaultStencilState.enabled)
+                return false;
+
+            int cameraMask = cameraData.camera.cullingMask;
+            int opaqueMask = opaqueLayerMask.value & cameraMask;
+            if (opaqueMask == 0 || (prepassLayerMask.value & cameraMask) != opaqueMask)
+                return false;
+
+            layerMask = opaqueMask;
+            return true;
+        }
+
         internal GraphicsFormat cameraDepthTextureFormat { get => (m_CameraDepthTextureFormat != DepthFormat.Default) ? (GraphicsFormat)m_CameraDepthTextureFormat : CoreUtils.GetDefaultDepthStencilFormat(); }
         internal GraphicsFormat cameraDepthAttachmentFormat { get => (m_CameraDepthAttachmentFormat != DepthFormat.Default) ? (GraphicsFormat)m_CameraDepthAttachmentFormat : CoreUtils.GetDefaultDepthStencilFormat(); }
 

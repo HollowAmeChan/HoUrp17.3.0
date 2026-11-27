@@ -299,8 +299,8 @@ namespace UnityEngine.Rendering.Universal.Internal
                 // a stale _BlitTexture binding, making RenderGraph see the same
                 // texture as both input and color attachment.
                 builder.UseAllGlobalTextures(m_IsOpaque);
-                if (!m_IsOpaque && frameData.Contains<HoTransparentShadowDrawData>())
-                    frameData.Get<HoTransparentShadowDrawData>().DeclareReads(builder);
+                if (frameData.Contains<HoTransparentShadowDrawData>())
+                    frameData.Get<HoTransparentShadowDrawData>().DeclareReads(builder, m_IsOpaque);
 
                 InitPassData(cameraData, ref passData, batchLayerMask, resourceData.isActiveTargetBackBuffer);
 
@@ -482,6 +482,8 @@ namespace UnityEngine.Rendering.Universal.Internal
                 UniversalLightData lightData = frameData.Get<UniversalLightData>();                
 
                 InitPassData(cameraData, ref passData.basePassData, batchLayerMask);
+                if (frameData.Contains<HoTransparentShadowDrawData>())
+                    frameData.Get<HoTransparentShadowDrawData>().DeclareReads(builder, passData.basePassData.isOpaque);
 
                 passData.maskSize = maskSize;
 
