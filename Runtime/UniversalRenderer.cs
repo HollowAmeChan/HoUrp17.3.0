@@ -238,7 +238,8 @@ namespace UnityEngine.Rendering.Universal
         internal LayerMask prepassLayerMask { get; set; }
         internal LayerMask opaqueLayerMask { get; set; }
         internal LayerMask transparentLayerMask { get; set; }
-        internal bool shadowTransparentReceive { get; set; }
+        /// <summary>Whether this renderer allows transparent objects to receive realtime shadows.</summary>
+        public bool shadowTransparentReceive { get; internal set; }
 
         internal GraphicsFormat cameraDepthTextureFormat { get => (m_CameraDepthTextureFormat != DepthFormat.Default) ? (GraphicsFormat)m_CameraDepthTextureFormat : CoreUtils.GetDefaultDepthStencilFormat(); }
         internal GraphicsFormat cameraDepthAttachmentFormat { get => (m_CameraDepthAttachmentFormat != DepthFormat.Default) ? (GraphicsFormat)m_CameraDepthAttachmentFormat : CoreUtils.GetDefaultDepthStencilFormat(); }
