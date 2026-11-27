@@ -59,9 +59,10 @@ namespace UnityEngine.Rendering.Universal
             bool result = false;
             foreach (var rendererFeature in rendererFeatures)
             {
-                if (rendererFeature.isActive)
+                if (rendererFeature.isActive && rendererFeature.RequireRenderingLayers(isDeferred, accurateGbufferNormals,
+                        out Event rendererEvent, out MaskSize rendererMaskSize))
                 {
-                    result |= rendererFeature.RequireRenderingLayers(isDeferred, accurateGbufferNormals, out Event rendererEvent, out MaskSize rendererMaskSize);
+                    result = true;
                     combinedEvent = Combine(combinedEvent, rendererEvent);
                     combinedMaskSize = Combine(combinedMaskSize, rendererMaskSize);
                 }
