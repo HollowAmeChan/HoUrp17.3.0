@@ -855,6 +855,13 @@ namespace UnityEngine.Rendering.Universal.Internal
             }
         }
 
+        private bool ShouldRenderShadowSlices(int additionalLightIndex)
+        {
+            Vector4 shadowParams = m_AdditionalLightIndexToShadowParams[additionalLightIndex];
+            return !ShadowUtils.FastApproximately(shadowParams.x, 0.0f)
+                && !ShadowUtils.FastApproximately(shadowParams.w, -1.0f);
+        }
+
         private void RenderAdditionalShadowmapAtlas(RasterCommandBuffer cmd, ref PassData data, bool useRenderGraph)
         {
             NativeArray<VisibleLight> visibleLights = data.lightData.visibleLights;
@@ -878,10 +885,8 @@ namespace UnityEngine.Rendering.Universal.Internal
                 {
                     int additionalLightIndex = m_ShadowSliceToAdditionalLightIndex[globalShadowSliceIndex];
 
-                    // we do the shadow strength check here again here because we might have zero strength for non-shadow-casting lights.
-                    // In that case we need the shadow data buffer but we can skip rendering them to shadowmap.
-                    if (   ShadowUtils.FastApproximately(m_AdditionalLightIndexToShadowParams[additionalLightIndex].x, 0.0f)
-                        || ShadowUtils.FastApproximately(m_AdditionalLightIndexToShadowParams[additionalLightIndex].w, -1.0f))
+                    // The receiver data may still be needed even when there is no realtime slice to draw.
+                    if (!ShouldRenderShadowSlices(additionalLightIndex))
                         continue;
 
                     int visibleLightIndex = m_AdditionalLightIndexToVisibleLightIndex[additionalLightIndex];
@@ -1008,6 +1013,37 @@ namespace UnityEngine.Rendering.Universal.Internal
             }
         }
 
+        private void PublishAtlasData(ContextContainer frameData, bool usesForwardLightIndices)
+        {
+            AdditionalLightShadowAtlasData atlasData = null;
+            int sliceCount = m_ShadowSliceToAdditionalLightIndex.Count;
+            int firstSlice = 0;
+            while (firstSlice < sliceCount)
+            {
+                int shaderLightIndex = m_ShadowSliceToAdditionalLightIndex[firstSlice];
+                uint sliceMask = 1u << m_GlobalShadowSliceIndexToPerLightShadowSliceIndex[firstSlice];
+                int nextSlice = firstSlice + 1;
+                // Setup appends all accepted slices for a light before moving to the next light.
+                while (nextSlice < sliceCount && m_ShadowSliceToAdditionalLightIndex[nextSlice] == shaderLightIndex)
+                {
+                    sliceMask |= 1u << m_GlobalShadowSliceIndexToPerLightShadowSliceIndex[nextSlice];
+                    ++nextSlice;
+                }
+
+                if (ShouldRenderShadowSlices(shaderLightIndex))
+                {
+                    atlasData ??= frameData.GetOrCreate<AdditionalLightShadowAtlasData>();
+                    atlasData.Add(shaderLightIndex, m_AdditionalLightIndexToVisibleLightIndex[shaderLightIndex],
+                        firstSlice, nextSlice - firstSlice, sliceMask);
+                }
+
+                firstSlice = nextSlice;
+            }
+
+            if (atlasData != null)
+                atlasData.UsesForwardLightIndices = usesForwardLightIndices;
+        }
+
         internal TextureHandle Render(RenderGraph graph, ContextContainer frameData)
         {
             UniversalRenderingData renderingData = frameData.Get<UniversalRenderingData>();
@@ -1030,6 +1066,7 @@ namespace UnityEngine.Rendering.Universal.Internal
 
                     shadowTexture = UniversalRenderer.CreateRenderGraphTexture(graph, m_AdditionalLightShadowDescriptor, k_AdditionalLightShadowMapTextureName, true,  ShadowUtils.m_ForceShadowPointSampling ? FilterMode.Point : FilterMode.Bilinear);
                     builder.SetRenderAttachmentDepth(shadowTexture, AccessFlags.Write);
+                    PublishAtlasData(frameData, !((UniversalRenderer)cameraData.renderer).usesDeferredLighting);
                 }
                 else
                 {
